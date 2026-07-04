@@ -85,6 +85,12 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
+Verify the latest successful non-PR workflow run and its uploaded artifacts:
+
+```bash
+./scripts/verify_github_actions.py <owner>/<repo>
+```
+
 Triggers:
 
 - `workflow_dispatch`: manual package run from the Actions tab.

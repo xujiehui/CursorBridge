@@ -80,6 +80,7 @@ After creating the GitHub repository:
 ```bash
 git remote add origin https://github.com/<owner>/<repo>.git
 git push -u origin master
+./scripts/verify_github_actions.py <owner>/<repo>
 ```
 
 This workspace has Xcode 13.2.1 / macOS SDK 12.1. The macOS packaging script applies a local Wails compatibility patch so the `.app` can still be built.

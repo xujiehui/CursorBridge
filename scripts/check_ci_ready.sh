@@ -20,6 +20,7 @@ check "workflow package matrix" python3 "$ROOT/scripts/verify_workflow.py"
 check "macOS package script" test -x "$ROOT/scripts/package_darwin.sh"
 check "Windows package script" test -x "$ROOT/scripts/package_windows.sh"
 check "release verifier" test -x "$ROOT/scripts/verify_release.sh"
+check "GitHub Actions verifier" test -x "$ROOT/scripts/verify_github_actions.py"
 
 if git -C "$ROOT" remote get-url origin >/dev/null 2>&1; then
   printf "ok: git remote origin (%s)\n" "$(git -C "$ROOT" remote get-url origin)"
