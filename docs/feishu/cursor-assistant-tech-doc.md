@@ -1,0 +1,107 @@
+---
+source_url: https://dcne38qm5vlg.feishu.cn/wiki/K2YHwSbAjilCZ6k3ywQcHnxFn7e
+captured_at: 2026-07-03T16:22:31.892Z
+title: Cursor助手 - 项目技术文档 - Feishu Docs
+final_url: https://dcne38qm5vlg.feishu.cn/wiki/K2YHwSbAjilCZ6k3ywQcHnxFn7e
+---
+
+层级
+技术选型
+后端
+Go 1.25 + Wails v3
+前端
+Vue 3 + Vite 7 + Tailwind CSS 4
+代理
+goproxy + 自定义 TLS 证书管理
+协议
+Protocol Buffers (Connect)
+数据库
+SQLite (modernc.org/sqlite)
+┌─────────────────────────────────────────────────────────────────┐
+│                        Cursor IDE                               │
+└─────────────────────────┬───────────────────────────────────────┘
+│ HTTP/HTTPS 请求
+▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    MITM Proxy Server                            │
+│                  (127.0.0.1:18080)                              │
+└─────────────────────────┬───────────────────────────────────────┘
+│
+┌───────────────┼───────────────┐
+│               │               │
+▼               ▼               ▼
+┌────────────┐  ┌────────────┐  ┌────────────┐
+│  Direct    │  │   Relay    │  │  Self-Impl │
+│  Forward   │  │  Gateway   │  │   Model    │
+└────────────┘  └────────────┘  └────────────┘
+│               │               │
+▼               ▼               ▼
+┌────────────┐  ┌────────────┐  ┌────────────┐
+│  Cursor    │  │  Cursor    │  │  OpenAI /  │
+│  Server    │  │  Server    │  │  Anthropic │
+└────────────┘  └────────────┘  └────────────┘
+负责拦截 Cursor IDE 的 HTTPS 请求。
+1. 用户配置模型适配器 (BaseURL + APIKey)
+│
+▼
+2. 请求到达 Relay Gateway
+│
+├── 检测模型 ID 前缀 "byok/"
+│
+项目使用 Protocol Buffers 进行 AI 请求/响应的编解码。
+主要协议文件:
+文件
+用途
+aiserver_v1.proto
+AI 服务完整协议定义
+agent_v1_transport_pseudo.proto
+Agent 传输协议
+dashboard_usage_patch.proto
+使用量统计补丁
+平台
+格式
+输出路径
+macOS arm64
+.app / .dmg
+bin/Cursor助手-darwin-arm64.dmg
+macOS amd64
+.app / .dmg
+bin/Cursor助手-darwin-amd64.dmg
+Windows amd64
+.exe / .zip
+bin/Cursor助手-windows-amd64.zip
+错误
+说明
+HTTP 状态码
+ErrInvalidSystemSetting
+系统配置无效
+500
+ErrCursorAccountUnavailable
+Cursor 账号不可用
+503
+ErrByokChannelRateLimited
+BYOK 渠道限流
+429
+ErrByokChannelNotAvailable
+BYOK 渠道不可用
+503
+ErrInvalidBidiAppendPayload
+无效的双向流负载
+400
+1. CA 证书: 使用内置 CA 证书，每次编译时嵌入
+2. API Key 存储: 以明文形式存储在本地配置文件，用户需自行保护
+### 3. 代理监听: 仅绑定 `127.0.0.1`，不接受外部连接
+### 4. 单实例模式: 应用通过 `com.cursor-assistant.single-instance` 保证单实例运行
+依赖
+用途
+github.com/wailsapp/wails/v3
+桌面应用框架
+github.com/elazarl/goproxy
+HTTP 代理实现
+google.golang.org/protobuf
+Protocol Buffers
+modernc.org/sqlite
+纯 Go SQLite
+github.com/google/uuid
+UUID 生成
+© 2026, Cursor助手

@@ -1,0 +1,14 @@
+.DS_Store
+.cache/
+.tools/
+.tmp-wails-probe/
+.tmp-smoke-data/
+bin/
+dist/
+frontend/dist/
+frontend/node_modules/
+node_modules/
+*.log
+*.pem
+*.key
+coverage.out

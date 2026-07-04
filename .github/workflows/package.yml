@@ -1,0 +1,126 @@
+name: Package
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+env:
+  GOTOOLCHAIN: go1.25.11
+  GO_VERSION: "1.25.11"
+  NODE_VERSION: "20"
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+        working-directory: frontend
+
+      - run: go test ./...
+
+      - run: npm run build
+        working-directory: frontend
+
+      - run: go build ./...
+
+      - run: ./scripts/build_desktop_check.sh
+
+  package:
+    name: Package ${{ matrix.target }}
+    needs: verify
+    runs-on: ${{ matrix.runner }}
+    if: github.event_name != 'pull_request'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Wails macOS desktop builds must run on the target CPU architecture.
+          - target: darwin-amd64
+            runner: macos-15-intel
+            script: ./scripts/package_darwin.sh amd64
+            artifact_name: CursorAssistant-darwin-amd64
+            artifact_path: bin/CursorAssistant-darwin-amd64.app.zip
+          - target: darwin-arm64
+            runner: macos-14
+            script: ./scripts/package_darwin.sh arm64
+            artifact_name: CursorAssistant-darwin-arm64
+            artifact_path: bin/CursorAssistant-darwin-arm64.app.zip
+          - target: windows-amd64
+            runner: ubuntu-latest
+            script: ./scripts/package_windows.sh amd64
+            artifact_name: CursorAssistant-windows-amd64
+            artifact_path: bin/CursorAssistant-windows-amd64.zip
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+        working-directory: frontend
+
+      - name: Build package
+        run: ${{ matrix.script }}
+
+      - name: Verify archive
+        run: unzip -t "${{ matrix.artifact_path }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_path }}
+          if-no-files-found: error
+
+  release:
+    name: Release
+    needs: package
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          fail_on_unmatched_files: true

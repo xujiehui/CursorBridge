@@ -1,0 +1,208 @@
+{
+  "sourceUrl": "https://dcne38qm5vlg.feishu.cn/wiki/K2YHwSbAjilCZ6k3ywQcHnxFn7e",
+  "capturedAt": "2026-07-03T16:22:31.892Z",
+  "title": "Cursor助手 - 项目技术文档 - Feishu Docs",
+  "finalUrl": "https://dcne38qm5vlg.feishu.cn/wiki/K2YHwSbAjilCZ6k3ywQcHnxFn7e",
+  "chunks": [
+    {
+      "i": 0,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1230,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\nCursor助手 - 项目技术文档\nCursor助手 - 项目技术文档\n项目概述\n技术栈\n架构设计\n目录结构\n核心模块详解\n1. MITM 代理服务 (`internal/mitm`)\n2. Relay 网关 (`internal/relay`)\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)\n4. 证书管理 (`internal/certs`)\n5. Cursor 集成 (`internal/cursor`)\n6. 桥接服务 (`internal/bridge`)\n数据流详解\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\nCursor助手 - 项目技术文档​\nModified June 16\nCursor助手 - 项目技术文档​\n非常感谢 @白帽酱 大佬的协议研究  https://rce.moe/  https://rce.moe/2026/01/31/cursor-reverse-notes-1/​\n助手作者后续在大佬的研究之上，继续深入研究了数月才小有成果。​\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n项目概述​\n​\nCursor助手 是一个基于 Wails v3 构建的跨平台桌面应用程序，为 Cursor IDE 提供本地代理服务。它的核心功能是通过 MITM（中间人代理）拦截 Cursor 的 API 请求，并支持 BYOK（Bring Your Own Key）自定义API模式，允许用户使用自己的 AI 模型 API 密钥。​\n​\n技术栈​\n​\n​\n​\n层级​\n​\n\t\n​\n技术选型​\n​\n\n\n​\n后端​\n​\n\t\n​\nGo 1.25 + Wails v3​\n​\n\n\n​\n前端​\n​\n\t\n​\nVue 3 + Vite 7 + Tailwind CSS 4​\n​\n\n\n​\n代理​\n​\n\t\n​\ngoproxy + 自定义 TLS 证书管理​\n​\n\n\n​\n协议​\n​\n\t\n​\nProtocol Buffers (Connect)​\n​\n\n\n​\n数据库​\n​\n\t\n​\nSQLite (modernc.org/sqlite)​\n​\n​\n​\nComments (0)\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 1,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 2353,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\nCursor助手 - 项目技术文档\nCursor助手 - 项目技术文档\n项目概述\n技术栈\n架构设计\n目录结构\n核心模块详解\n1. MITM 代理服务 (`internal/mitm`)\n2. Relay 网关 (`internal/relay`)\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)\n4. 证书管理 (`internal/certs`)\n5. Cursor 集成 (`internal/cursor`)\n6. 桥接服务 (`internal/bridge`)\n数据流详解\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n项目概述​\n​\nCursor助手 是一个基于 Wails v3 构建的跨平台桌面应用程序，为 Cursor IDE 提供本地代理服务。它的核心功能是通过 MITM（中间人代理）拦截 Cursor 的 API 请求，并支持 BYOK（Bring Your Own Key）自定义API模式，允许用户使用自己的 AI 模型 API 密钥。​\n​\n技术栈​\n​\n​\n​\n层级​\n​\n\t\n​\n技术选型​\n​\n\n\n​\n后端​\n​\n\t\n​\nGo 1.25 + Wails v3​\n​\n\n\n​\n前端​\n​\n\t\n​\nVue 3 + Vite 7 + Tailwind CSS 4​\n​\n\n\n​\n代理​\n​\n\t\n​\ngoproxy + 自定义 TLS 证书管理​\n​\n\n\n​\n协议​\n​\n\t\n​\nProtocol Buffers (Connect)​\n​\n\n\n​\n数据库​\n​\n\t\n​\nSQLite (modernc.org/sqlite)​\n​\n​\n​\n​\n​\n​\n架构设计​\n​\n​\nCode block​\nPlain Text\nCopy\n┌─────────────────────────────────────────────────────────────────┐​\n│                        Cursor IDE                               │​\n└─────────────────────────┬───────────────────────────────────────┘​\n                          │ HTTP/HTTPS 请求​\n                          ▼​\n┌─────────────────────────────────────────────────────────────────┐​\n│                    MITM Proxy Server                            │​\n│                  (127.0.0.1:18080)                              │​\n└─────────────────────────┬───────────────────────────────────────┘​\n                          │​\n          ┌───────────────┼───────────────┐​\n          │               │               │​\n          ▼               ▼               ▼​\n   ┌────────────┐  ┌────────────┐  ┌────────────┐​\n   │  Direct    │  │   Relay    │  │  Self-Impl │​\n   │  Forward   │  │  Gateway   │  │   Model    │​\n   └────────────┘  └────────────┘  └────────────┘​\n          │               │               │​\n          ▼               ▼               ▼​\n   ┌────────────┐  ┌────────────┐  ┌────────────┐​\n   │  Cursor    │  │  Cursor    │  │  OpenAI /  │​\n   │  Server    │  │  Server    │  │  Anthropic │​\n   └────────────┘  └────────────┘  └────────────┘​\n​\nComments (0)\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 2,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 2915,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\nCursor助手 - 项目技术文档\nCursor助手 - 项目技术文档\n项目概述\n技术栈\n架构设计\n目录结构\n核心模块详解\n1. MITM 代理服务 (`internal/mitm`)\n2. Relay 网关 (`internal/relay`)\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)\n4. 证书管理 (`internal/certs`)\n5. Cursor 集成 (`internal/cursor`)\n6. 桥接服务 (`internal/bridge`)\n数据流详解\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\n​\nCode block​\nPlain Text\nCopy\n┌─────────────────────────────────────────────────────────────────┐​\n│                        Cursor IDE                               │​\n└─────────────────────────┬───────────────────────────────────────┘​\n                          │ HTTP/HTTPS 请求​\n                          ▼​\n┌─────────────────────────────────────────────────────────────────┐​\n│                    MITM Proxy Server                            │​\n│                  (127.0.0.1:18080)                              │​\n└─────────────────────────┬───────────────────────────────────────┘​\n                          │​\n          ┌───────────────┼───────────────┐​\n          │               │               │​\n          ▼               ▼               ▼​\n   ┌────────────┐  ┌────────────┐  ┌────────────┐​\n   │  Direct    │  │   Relay    │  │  Self-Impl │​\n   │  Forward   │  │  Gateway   │  │   Model    │​\n   └────────────┘  └────────────┘  └────────────┘​\n          │               │               │​\n          ▼               ▼               ▼​\n   ┌────────────┐  ┌────────────┐  ┌────────────┐​\n   │  Cursor    │  │  Cursor    │  │  OpenAI /  │​\n   │  Server    │  │  Server    │  │  Anthropic │​\n   └────────────┘  └────────────┘  └────────────┘​\n​\n​\n​\n​\n​\n目录结构​\n​\n​\nCode block​\nPlain Text\nCopy\ncursor-client/​\n├── main.go                      # 应用入口​\n├── go.mod                       # Go 模块定义​\n├── Taskfile.yml                 # 构建任务配置​\n├── build/                       # 构建配置​\n│   ├── config.yml              # Wails 开发配置​\n│   ├── darwin/                 # macOS 构建脚本​\n│   └── windows/                # Windows 构建脚本​\n├── frontend/                    # Vue.js 前端​\n│   ├── src/                    # 前端源码​\n│   ├── bindings/               # Wails 自动生成的绑定​\n│   └── package.json            # 前端依赖​\n├── internal/                    # 内部包​\n│   ├── app/                    # 应用运行器​\n│   ├── bridge/                 # Wails 服务桥接​\n│   ├── certs/                  # TLS 证书管理​\n│   ├── clientruntime/          # 客户端运行时服务​\n│   ├── cursor/                 # Cursor IDE 集成​\n│   ├── mitm/                   # MITM 代理服务​\n│   ├── protocodec/             # Protocol Buffer 编解码​\n​\n​\n​\n​\n​\n核心模块详解​\n​\n1. MITM 代理服务 (`internal/mitm`)​\n​\n负责拦截 Cursor IDE 的 HTTPS 请求。​\nComments (0)\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 3,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 2160,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\nCursor助手 - 项目技术文档\nCursor助手 - 项目技术文档\n项目概述\n技术栈\n架构设计\n目录结构\n核心模块详解\n1. MITM 代理服务 (`internal/mitm`)\n2. Relay 网关 (`internal/relay`)\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)\n4. 证书管理 (`internal/certs`)\n5. Cursor 集成 (`internal/cursor`)\n6. 桥接服务 (`internal/bridge`)\n数据流详解\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\n​\n​\n目录结构​\n​\n​\nCode block​\nPlain Text\nCopy\ncursor-client/​\n├── main.go                      # 应用入口​\n├── go.mod                       # Go 模块定义​\n├── Taskfile.yml                 # 构建任务配置​\n├── build/                       # 构建配置​\n│   ├── config.yml              # Wails 开发配置​\n│   ├── darwin/                 # macOS 构建脚本​\n│   └── windows/                # Windows 构建脚本​\n├── frontend/                    # Vue.js 前端​\n│   ├── src/                    # 前端源码​\n│   ├── bindings/               # Wails 自动生成的绑定​\n│   └── package.json            # 前端依赖​\n├── internal/                    # 内部包​\n│   ├── app/                    # 应用运行器​\n│   ├── bridge/                 # Wails 服务桥接​\n│   ├── certs/                  # TLS 证书管理​\n│   ├── clientruntime/          # 客户端运行时服务​\n│   ├── cursor/                 # Cursor IDE 集成​\n│   ├── mitm/                   # MITM 代理服务​\n│   ├── protocodec/             # Protocol Buffer 编解码​\n│   ├── relay/                  # Relay 网关核心​\n│   └── runtime/                # 本地运行时依赖​\n└── proto/                       # Protocol Buffer 定义​\n    ├── aiserver_v1.proto       # AI 服务协议​\n    ├── agent_v1_transport_pseudo.proto​\n    └── from_extensions/        # 从扩展提取的协议​\n​\n​\n​\n​\n​\n核心模块详解​\n​\n1. MITM 代理服务 (`internal/mitm`)​\n​\n负责拦截 Cursor IDE 的 HTTPS 请求。​\n​\n核心组件:​\n•\nProxyServer: 主代理服务器，监听 127.0.0.1:18080​\n•\n支持动态证书生成​\n•\n可配置上游服务器 URL​\n关键功能:​\n•\nHTTPS 流量拦截​\n•\n请求头注入 (x-raw-cursor-server-url, x-raw-cursor-user-key, x-raw-cursor-device-id)​\n•\n透明代理转发​\n2. Relay 网关 (`internal/relay`)​\n​\nComments (0)\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 4,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1514,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\nCursor助手 - 项目技术文档\nCursor助手 - 项目技术文档\n项目概述\n技术栈\n架构设计\n目录结构\n核心模块详解\n1. MITM 代理服务 (`internal/mitm`)\n2. Relay 网关 (`internal/relay`)\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)\n4. 证书管理 (`internal/certs`)\n5. Cursor 集成 (`internal/cursor`)\n6. 桥接服务 (`internal/bridge`)\n数据流详解\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\nCode block​\nPlain Text\nCopy\n    └── from_extensions/        # 从扩展提取的协议​\n​\n​\n​\n​\n​\n核心模块详解​\n​\n1. MITM 代理服务 (`internal/mitm`)​\n​\n负责拦截 Cursor IDE 的 HTTPS 请求。​\n​\n核心组件:​\n•\nProxyServer: 主代理服务器，监听 127.0.0.1:18080​\n•\n支持动态证书生成​\n•\n可配置上游服务器 URL​\n关键功能:​\n•\nHTTPS 流量拦截​\n•\n请求头注入 (x-raw-cursor-server-url, x-raw-cursor-user-key, x-raw-cursor-device-id)​\n•\n透明代理转发​\n2. Relay 网关 (`internal/relay`)​\n​\n核心请求处理引擎，负责路由和转换 Cursor API 请求。​\n​\n路由模式:​\n​\n​\n模式​\n​\n\t\n​\n说明​\n​\n\n\n​\nrouteDirect​\n​\n\t\n​\n直接转发到 Cursor 服务器​\n​\n\n\n​\nrouteRelay​\n​\n\t\n​\n通过本地 Relay 处理​\n​\n\n\n​\nselfImplemented​\n​\n\t\n​\n使用自有 API Key 调用模型​\n​\n​\n​\n关键文件:​\n•\ngateway_handler.go: HTTP 请求入口​\n•\ngateway_forward.go: 上游转发逻辑​\n•\nself_implemented_*.go: BYOK 模型实现​\n•\nproto.go: Protocol Buffer 解析​\n支持的 AI 接口:​\n•\nrun_sse: Server-Sent Events 流式响应​\n•\nbidi_append: 双向流式追加​\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)​\nComments (0)\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 5,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1754,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\nCursor助手 - 项目技术文档\nCursor助手 - 项目技术文档\n项目概述\n技术栈\n架构设计\n目录结构\n核心模块详解\n1. MITM 代理服务 (`internal/mitm`)\n2. Relay 网关 (`internal/relay`)\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)\n4. 证书管理 (`internal/certs`)\n5. Cursor 集成 (`internal/cursor`)\n6. 桥接服务 (`internal/bridge`)\n数据流详解\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n核心请求处理引擎，负责路由和转换 Cursor API 请求。​\n​\n路由模式:​\n​\n​\n模式​\n​\n\t\n​\n说明​\n​\n\n\n​\nrouteDirect​\n​\n\t\n​\n直接转发到 Cursor 服务器​\n​\n\n\n​\nrouteRelay​\n​\n\t\n​\n通过本地 Relay 处理​\n​\n\n\n​\nselfImplemented​\n​\n\t\n​\n使用自有 API Key 调用模型​\n​\n​\n​\n关键文件:​\n•\ngateway_handler.go: HTTP 请求入口​\n•\ngateway_forward.go: 上游转发逻辑​\n•\nself_implemented_*.go: BYOK 模型实现​\n•\nproto.go: Protocol Buffer 解析​\n支持的 AI 接口:​\n•\nrun_sse: Server-Sent Events 流式响应​\n•\nbidi_append: 双向流式追加​\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)​\n​\n允许用户配置自己的 OpenAI 或 Anthropic API Key。​\n​\n支持的平台:​\n•\nOpenAI (GPT-4, GPT-4o 等)​\n•\nAnthropic (Claude 系列)​\n配置结构:​\n​\nCode block​\nGo\nCopy\ntype ModelAdapterConfig struct {​\n    DisplayName string  // 显示名称​\n    Type        string  // \"openai\" 或 \"anthropic\"​\n    BaseURL     string  // API 端点​\n    APIKey      string  // API 密钥​\n    ModelID     string  // 模型标识​\n}​\n​\n​\n4. 证书管理 (`internal/certs`)​\n​\n管理 MITM 所需的 CA 证书。​\n​\n功能:​\n•\n内置 CA 证书（编译时嵌入）​\n•\n动态生成服务器证书​\n•\n支持 macOS/Windows 系统证书安装​\n5. Cursor 集成 (`internal/cursor`)​\n​\n与 Cursor IDE 宿主环境交互。​\n​\n功能:​\n•\n读取/写入 Cursor 设置​\n•\n设备 ID 管理​\n•\n系统代理设置​\n•\n状态数据库访问​\n6. 桥接服务 (`internal/bridge`)​\nComments (0)\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 6,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1432,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\nCursor助手 - 项目技术文档\nCursor助手 - 项目技术文档\n项目概述\n技术栈\n架构设计\n目录结构\n核心模块详解\n1. MITM 代理服务 (`internal/mitm`)\n2. Relay 网关 (`internal/relay`)\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)\n4. 证书管理 (`internal/certs`)\n5. Cursor 集成 (`internal/cursor`)\n6. 桥接服务 (`internal/bridge`)\n数据流详解\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n支持的平台:​\n•\nOpenAI (GPT-4, GPT-4o 等)​\n•\nAnthropic (Claude 系列)​\n配置结构:​\n​\nCode block​\nGo\nCopy\ntype ModelAdapterConfig struct {​\n    DisplayName string  // 显示名称​\n    Type        string  // \"openai\" 或 \"anthropic\"​\n    BaseURL     string  // API 端点​\n    APIKey      string  // API 密钥​\n    ModelID     string  // 模型标识​\n}​\n​\n​\n4. 证书管理 (`internal/certs`)​\n​\n管理 MITM 所需的 CA 证书。​\n​\n功能:​\n•\n内置 CA 证书（编译时嵌入）​\n•\n动态生成服务器证书​\n•\n支持 macOS/Windows 系统证书安装​\n5. Cursor 集成 (`internal/cursor`)​\n​\n与 Cursor IDE 宿主环境交互。​\n​\n功能:​\n•\n读取/写入 Cursor 设置​\n•\n设备 ID 管理​\n•\n系统代理设置​\n•\n状态数据库访问​\n6. 桥接服务 (`internal/bridge`)​\n​\n向 Wails 前端暴露 Go 服务。​\n​\n暴露的服务:​\n•\nProxyService: 代理控制​\n•\nWindowService: 窗口管理​\n前端可调用方法:​\n​\nCode block​\nTypeScript\nCopy\n// 启动代理​\nStartProxy(): Promise<ProxyState>​\n​\n​\n​\n​\n​\n数据流详解​\n​\nComments (0)\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 7,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1510,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\nCursor助手 - 项目技术文档\nCursor助手 - 项目技术文档\n项目概述\n技术栈\n架构设计\n目录结构\n核心模块详解\n1. MITM 代理服务 (`internal/mitm`)\n2. Relay 网关 (`internal/relay`)\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)\n4. 证书管理 (`internal/certs`)\n5. Cursor 集成 (`internal/cursor`)\n6. 桥接服务 (`internal/bridge`)\n数据流详解\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\n与 Cursor IDE 宿主环境交互。​\n​\n功能:​\n•\n读取/写入 Cursor 设置​\n•\n设备 ID 管理​\n•\n系统代理设置​\n•\n状态数据库访问​\n6. 桥接服务 (`internal/bridge`)​\n​\n向 Wails 前端暴露 Go 服务。​\n​\n暴露的服务:​\n•\nProxyService: 代理控制​\n•\nWindowService: 窗口管理​\n前端可调用方法:​\n​\nCode block​\nTypeScript\nCopy\n// 启动代理​\nStartProxy(): Promise<ProxyState>​\n// 停止代理​\nStopProxy(): Promise<ProxyState>​\n// 获取状态​\nGetState(): ProxyState​\n// 设置上游 URL​\nSetBaseURL(url: string): Promise<ProxyState>​\n// 加载用户配置​\nLoadUserConfig(): Promise<UserConfig>​\n// 保存用户配置​\nSaveUserConfig(cfg: UserConfig): Promise<void>​\n// 激活许可证​\nActivateLicense(req: LicenseActionRequest): Promise<LicenseAPIResult>​\n​\n​\n​\n​\n​\n数据流详解​\n​\n请求处理流程​\n​\n​\nCode block​\nPlain Text\nCopy\n1. Cursor IDE 发起请求​\n   │​\n   ▼​\n2. MITM Proxy 拦截​\n   │​\n   ├── 检查目标 URL​\n​\n​\nBYOK 模式流程​\n​\n​\nCode block​\nPlain Text\nCopy\n​\n​\n​\n​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 8,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1580,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\nCursor助手 - 项目技术文档\nCursor助手 - 项目技术文档\n项目概述\n技术栈\n架构设计\n目录结构\n核心模块详解\n1. MITM 代理服务 (`internal/mitm`)\n2. Relay 网关 (`internal/relay`)\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)\n4. 证书管理 (`internal/certs`)\n5. Cursor 集成 (`internal/cursor`)\n6. 桥接服务 (`internal/bridge`)\n数据流详解\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\nCode block​\nTypeScript\nCopy\nSetBaseURL(url: string): Promise<ProxyState>​\n// 加载用户配置​\nLoadUserConfig(): Promise<UserConfig>​\n// 保存用户配置​\nSaveUserConfig(cfg: UserConfig): Promise<void>​\n// 激活许可证​\nActivateLicense(req: LicenseActionRequest): Promise<LicenseAPIResult>​\n​\n​\n​\n​\n​\n数据流详解​\n​\n请求处理流程​\n​\n​\nCode block​\nPlain Text\nCopy\n1. Cursor IDE 发起请求​\n   │​\n   ▼​\n2. MITM Proxy 拦截​\n   │​\n   ├── 检查目标 URL​\n   │​\n   ├── 提取自定义头 (x-raw-cursor-server-url)​\n   │​\n   ▼​\n3. Relay Gateway 路由判断​\n   │​\n   ├── 匹配路由规则​\n   │​\n   ├── 判断处理模式​\n   │   │​\n   │   ├── 直接转发 → Cursor Server​\n   │   │​\n   │   ├── Relay 转发 → Cursor Server (带认证)​\n   │   │​\n   │   └── 自实现模型 → OpenAI/Anthropic API​\n   │​\n   ▼​\n4. 响应返回给 Cursor IDE​\n​\n​\nBYOK 模式流程​\n​\n​\nCode block​\nPlain Text\nCopy\n1. 用户配置模型适配器 (BaseURL + APIKey)​\n   │​\n   ▼​\n2. 请求到达 Relay Gateway​\n   │​\n   ├── 检测模型 ID 前缀 \"byok/\"​\n   │​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 9,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1599,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\nCursor助手 - 项目技术文档\nCursor助手 - 项目技术文档\n项目概述\n技术栈\n架构设计\n目录结构\n核心模块详解\n1. MITM 代理服务 (`internal/mitm`)\n2. Relay 网关 (`internal/relay`)\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)\n4. 证书管理 (`internal/certs`)\n5. Cursor 集成 (`internal/cursor`)\n6. 桥接服务 (`internal/bridge`)\n数据流详解\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\nCode block​\nPlain Text\nCopy\n   ├── 匹配路由规则​\n   │​\n   ├── 判断处理模式​\n   │   │​\n   │   ├── 直接转发 → Cursor Server​\n   │   │​\n   │   ├── Relay 转发 → Cursor Server (带认证)​\n   │   │​\n   │   └── 自实现模型 → OpenAI/Anthropic API​\n   │​\n   ▼​\n4. 响应返回给 Cursor IDE​\n​\n​\nBYOK 模式流程​\n​\n​\nCode block​\nPlain Text\nCopy\n1. 用户配置模型适配器 (BaseURL + APIKey)​\n   │​\n   ▼​\n2. 请求到达 Relay Gateway​\n   │​\n   ├── 检测模型 ID 前缀 \"byok/\"​\n   │​\n   ├── 匹配模型适配器配置​\n   │​\n   ▼​\n3. 转换请求格式​\n   │​\n   ├── Cursor Proto → OpenAI/Anthropic 格式​\n   │​\n   ▼​\n4. 调用第三方 API​\n   │​\n   ▼​\n5. 转换响应格式​\n   │​\n   ├── OpenAI/Anthropic → Cursor Proto 格式​\n   │​\n   ▼​\n6. 流式返回给 Cursor IDE​\n​\n​\n​\n​\n​\nProtocol Buffer 协议​\n​\n项目使用 Protocol Buffers 进行 AI 请求/响应的编解码。​\n​\n主要协议文件:​\n​\n​\n文件​\n​\n\t\n​\n用途​\n​\n\n\n​\naiserver_v1.proto​\n​\n\t\n​\nAI 服务完整协议定义​\n​\n\n\n​\nagent_v1_transport_pseudo.proto​\n​\n\t\n​\nAgent 传输协议​\n​\n\n\n​\ndashboard_usage_patch.proto​\n​\n\t\n​\n使用量统计补丁​\n​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 10,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1368,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\nCursor助手 - 项目技术文档\nCursor助手 - 项目技术文档\n项目概述\n技术栈\n架构设计\n目录结构\n核心模块详解\n1. MITM 代理服务 (`internal/mitm`)\n2. Relay 网关 (`internal/relay`)\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)\n4. 证书管理 (`internal/certs`)\n5. Cursor 集成 (`internal/cursor`)\n6. 桥接服务 (`internal/bridge`)\n数据流详解\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\nCode block​\nPlain Text\nCopy\n   │​\n   ▼​\n4. 调用第三方 API​\n   │​\n   ▼​\n5. 转换响应格式​\n   │​\n   ├── OpenAI/Anthropic → Cursor Proto 格式​\n   │​\n   ▼​\n6. 流式返回给 Cursor IDE​\n​\n​\n​\n​\n​\nProtocol Buffer 协议​\n​\n项目使用 Protocol Buffers 进行 AI 请求/响应的编解码。​\n​\n主要协议文件:​\n​\n​\n文件​\n​\n\t\n​\n用途​\n​\n\n\n​\naiserver_v1.proto​\n​\n\t\n​\nAI 服务完整协议定义​\n​\n\n\n​\nagent_v1_transport_pseudo.proto​\n​\n\t\n​\nAgent 传输协议​\n​\n\n\n​\ndashboard_usage_patch.proto​\n​\n\t\n​\n使用量统计补丁​\n​\n​\n​\n运行时加载顺序:​\n1.\nfrom_extensions/aiserver_v1.proto​\n2.\nfrom_extensions/agent_v1.proto​\n3.\ndashboard_usage_patch.proto​\n​\n​\n​\n构建与开发​\n​\n开发环境要求​\n​\n•\nGo 1.25+​\n•\nNode.js 18+​\n•\nWails v3 CLI​\n常用命令​\n​\n​\nCode block​\nBash\nCopy\n​\n​\n输出产物​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 11,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1502,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\nCursor助手 - 项目技术文档\nCursor助手 - 项目技术文档\n项目概述\n技术栈\n架构设计\n目录结构\n核心模块详解\n1. MITM 代理服务 (`internal/mitm`)\n2. Relay 网关 (`internal/relay`)\n3. BYOK 模型网关 (`internal/relay/self_implemented_*.go`)\n4. 证书管理 (`internal/certs`)\n5. Cursor 集成 (`internal/cursor`)\n6. 桥接服务 (`internal/bridge`)\n数据流详解\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\n​\n​\n\t\n​\n​\n\n\n​\n​\n\t\n​\n​\n\n\n​\n​\n\t\n​\n​\n\n\n​\ndashboard_usage_patch.proto​\n​\n\t\n​\n使用量统计补丁​\n​\n​\n​\n运行时加载顺序:​\n1.\nfrom_extensions/aiserver_v1.proto​\n2.\nfrom_extensions/agent_v1.proto​\n3.\ndashboard_usage_patch.proto​\n​\n​\n​\n构建与开发​\n​\n开发环境要求​\n​\n•\nGo 1.25+​\n•\nNode.js 18+​\n•\nWails v3 CLI​\n常用命令​\n​\n​\nCode block​\nBash\nCopy\n# 启动开发模式​\ntask dev​\n​\n# 后台启动开发模式​\ntask dev:bg​\n​\n# 停止开发模式​\ntask dev:stop​\n​\n# 构建 macOS arm64​\ntask build:darwin:arm64​\n​\n# 构建 Windows amd64​\ntask build:windows:amd64​\n​\n# 打包发布版本​\ntask package:release​\n​\n​\n输出产物​\n​\n​\n​\n平台​\n​\n\t\n​\n格式​\n​\n\t\n​\n输出路径​\n​\n\n\n​\nmacOS arm64​\n​\n\t\n​\n.app / .dmg​\n​\n\t\n​\nbin/Cursor助手-darwin-arm64.dmg​\n​\n\n\n​\nmacOS amd64​\n​\n\t\n​\n.app / .dmg​\n​\n\t\n​\nbin/Cursor助手-darwin-amd64.dmg​\n​\n\n\n​\nWindows amd64​\n​\n\t\n​\n.exe / .zip​\n​\n\t\n​\nbin/Cursor助手-windows-amd64.zip​\n​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 12,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1418,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\n许可证\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\nCode block​\nBash\nCopy\n​\n# 后台启动开发模式​\ntask dev:bg​\n​\n# 停止开发模式​\ntask dev:stop​\n​\n# 构建 macOS arm64​\ntask build:darwin:arm64​\n​\n# 构建 Windows amd64​\ntask build:windows:amd64​\n​\n# 打包发布版本​\ntask package:release​\n​\n​\n输出产物​\n​\n​\n​\n平台​\n​\n\t\n​\n格式​\n​\n\t\n​\n输出路径​\n​\n\n\n​\nmacOS arm64​\n​\n\t\n​\n.app / .dmg​\n​\n\t\n​\nbin/Cursor助手-darwin-arm64.dmg​\n​\n\n\n​\nmacOS amd64​\n​\n\t\n​\n.app / .dmg​\n​\n\t\n​\nbin/Cursor助手-darwin-amd64.dmg​\n​\n\n\n​\nWindows amd64​\n​\n\t\n​\n.exe / .zip​\n​\n\t\n​\nbin/Cursor助手-windows-amd64.zip​\n​\n​\n​\n​\n​\n​\n配置说明​\n​\n用户配置文件​\n​\n配置文件存储在用户目录：​\n•\nmacOS: ~/Library/Application Support/Cursor助手/​\n•\nWindows: %APPDATA%/Cursor助手/​\n**配置结构 (`UserConfig`):**​\n​\nCode block​\nJSON\nCopy\n{​\n  \"baseURL\": \"http://127.0.0.1:8080\",​\n  \"licenseCode\": \"\",​\n  \"modelAdapters\": [​\n    {​\n      \"displayName\": \"GPT-4o\",​\n      \"type\": \"openai\",​\n      \"baseURL\": \"https://api.openai.com/v1\",​\n​\n​\n代理设置​\n​\n应用会自动配置 Cursor IDE 的代理设置：​\n•\n代理地址: http://127.0.0.1:18080​\n•\nCA 证书: 自动安装到系统信任存储​\n​\n​\n​\n错误处理​\n​\n常见错误码​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 13,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1354,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\n许可证\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\n​\n​\n​\n配置说明​\n​\n用户配置文件​\n​\n配置文件存储在用户目录：​\n•\nmacOS: ~/Library/Application Support/Cursor助手/​\n•\nWindows: %APPDATA%/Cursor助手/​\n**配置结构 (`UserConfig`):**​\n​\nCode block​\nJSON\nCopy\n{​\n  \"baseURL\": \"http://127.0.0.1:8080\",​\n  \"licenseCode\": \"\",​\n  \"modelAdapters\": [​\n    {​\n      \"displayName\": \"GPT-4o\",​\n      \"type\": \"openai\",​\n      \"baseURL\": \"https://api.openai.com/v1\",​\n      \"apiKey\": \"sk-xxx\",​\n      \"modelID\": \"gpt-4o\"​\n    }​\n  ]​\n}​\n​\n​\n代理设置​\n​\n应用会自动配置 Cursor IDE 的代理设置：​\n•\n代理地址: http://127.0.0.1:18080​\n•\nCA 证书: 自动安装到系统信任存储​\n​\n​\n​\n错误处理​\n​\n常见错误码​\n​\n​\n​\n错误​\n​\n\t\n​\n说明​\n​\n\t\n​\nHTTP 状态码​\n​\n\n\n​\nErrInvalidSystemSetting​\n​\n\t\n​\n系统配置无效​\n​\n\t\n​\n500​\n​\n\n\n​\nErrCursorAccountUnavailable​\n​\n\t\n​\nCursor 账号不可用​\n​\n\t\n​\n503​\n​\n\n\n​\nErrByokChannelRateLimited​\n​\n\t\n​\nBYOK 渠道限流​\n​\n\t\n​\n429​\n​\n\n\n​\nErrByokChannelNotAvailable​\n​\n\t\n​\nBYOK 渠道不可用​\n​\n\t\n​\n503​\n​\n\n\n​\nErrInvalidBidiAppendPayload​\n​\n\t\n​\n无效的双向流负载​\n​\n\t\n​\n400​\n​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 14,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1329,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\n许可证\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\nCode block​\nJSON\nCopy\n​\n​\n代理设置​\n​\n应用会自动配置 Cursor IDE 的代理设置：​\n•\n代理地址: http://127.0.0.1:18080​\n•\nCA 证书: 自动安装到系统信任存储​\n​\n​\n​\n错误处理​\n​\n常见错误码​\n​\n​\n​\n错误​\n​\n\t\n​\n说明​\n​\n\t\n​\nHTTP 状态码​\n​\n\n\n​\nErrInvalidSystemSetting​\n​\n\t\n​\n系统配置无效​\n​\n\t\n​\n500​\n​\n\n\n​\nErrCursorAccountUnavailable​\n​\n\t\n​\nCursor 账号不可用​\n​\n\t\n​\n503​\n​\n\n\n​\nErrByokChannelRateLimited​\n​\n\t\n​\nBYOK 渠道限流​\n​\n\t\n​\n429​\n​\n\n\n​\nErrByokChannelNotAvailable​\n​\n\t\n​\nBYOK 渠道不可用​\n​\n\t\n​\n503​\n​\n\n\n​\nErrInvalidBidiAppendPayload​\n​\n\t\n​\n无效的双向流负载​\n​\n\t\n​\n400​\n​\n​\n​\n​\n​\n​\n日志与观测​\n​\n日志文件​\n​\n日志存储在应用数据目录：​\n•\nrun-usage.jsonl: 运行使用记录​\n•\nchannel-calls.jsonl: 渠道调用记录​\n调试模式​\n​\n通过配置启用详细日志：​\n​\nCode block​\nGo\nCopy\nRuntimeConfigSnapshot{​\n    ObservabilityLogEnabled: true,​\n}​\n​\n​\n​\n​\n​\n安全考虑​\n​\n1. CA 证书: 使用内置 CA 证书，每次编译时嵌入​\n2. API Key 存储: 以明文形式存储在本地配置文件，用户需自行保护​\n3. 代理监听: 仅绑定 `127.0.0.1`，不接受外部连接​\n4. 单实例模式: 应用通过 `com.cursor-assistant.single-instance` 保证单实例运行​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 15,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1140,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\n许可证\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\n​\n​\n​\n日志与观测​\n​\n日志文件​\n​\n日志存储在应用数据目录：​\n•\nrun-usage.jsonl: 运行使用记录​\n•\nchannel-calls.jsonl: 渠道调用记录​\n调试模式​\n​\n通过配置启用详细日志：​\n​\nCode block​\nGo\nCopy\nRuntimeConfigSnapshot{​\n    ObservabilityLogEnabled: true,​\n}​\n​\n​\n​\n​\n​\n安全考虑​\n​\n1. CA 证书: 使用内置 CA 证书，每次编译时嵌入​\n2. API Key 存储: 以明文形式存储在本地配置文件，用户需自行保护​\n3. 代理监听: 仅绑定 `127.0.0.1`，不接受外部连接​\n4. 单实例模式: 应用通过 `com.cursor-assistant.single-instance` 保证单实例运行​\n​\n​\n​\n​\n依赖说明​\n​\n主要 Go 依赖​\n​\n​\n​\n依赖​\n​\n\t\n​\n用途​\n​\n\n\n​\ngithub.com/wailsapp/wails/v3​\n​\n\t\n​\n桌面应用框架​\n​\n\n\n​\ngithub.com/elazarl/goproxy​\n​\n\t\n​\nHTTP 代理实现​\n​\n\n\n​\ngoogle.golang.org/protobuf​\n​\n\t\n​\nProtocol Buffers​\n​\n\n\n​\nmodernc.org/sqlite​\n​\n\t\n​\n纯 Go SQLite​\n​\n\n\n​\ngithub.com/google/uuid​\n​\n\t\n​\nUUID 生成​\n​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 16,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1118,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\n许可证\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n安全考虑​\n​\n1. CA 证书: 使用内置 CA 证书，每次编译时嵌入​\n2. API Key 存储: 以明文形式存储在本地配置文件，用户需自行保护​\n3. 代理监听: 仅绑定 `127.0.0.1`，不接受外部连接​\n4. 单实例模式: 应用通过 `com.cursor-assistant.single-instance` 保证单实例运行​\n​\n​\n​\n​\n依赖说明​\n​\n主要 Go 依赖​\n​\n​\n​\n依赖​\n​\n\t\n​\n用途​\n​\n\n\n​\ngithub.com/wailsapp/wails/v3​\n​\n\t\n​\n桌面应用框架​\n​\n\n\n​\ngithub.com/elazarl/goproxy​\n​\n\t\n​\nHTTP 代理实现​\n​\n\n\n​\ngoogle.golang.org/protobuf​\n​\n\t\n​\nProtocol Buffers​\n​\n\n\n​\nmodernc.org/sqlite​\n​\n\t\n​\n纯 Go SQLite​\n​\n\n\n​\ngithub.com/google/uuid​\n​\n\t\n​\nUUID 生成​\n​\n​\n​\n主要前端依赖​\n​\n​\n​\n依赖​\n​\n\t\n​\n用途​\n​\n\n\n​\nvue​\n​\n\t\n​\n前端框架​\n​\n\n\n​\nvue-router​\n​\n\t\n​\n路由管理​\n​\n\n\n​\ntailwindcss​\n​\n\t\n​\nCSS 框架​\n​\n\n\n​\n@wailsio/runtime​\n​\n\t\n​\nWails 运行时​\n​\n​\n​\n​\n​\n​\n扩展与定制​\n​\n添加新的模型适配器​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 17,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 1169,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\n许可证\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n​\n​\n​\n\t\n​\n​\n\n\n​\n​\n\t\n​\n​\n\n\n​\n​\n\t\n​\n​\n\n\n​\n​\n\t\n​\n​\n\n\n​\nmodernc.org/sqlite​\n​\n\t\n​\n纯 Go SQLite​\n​\n\n\n​\ngithub.com/google/uuid​\n​\n\t\n​\nUUID 生成​\n​\n​\n​\n主要前端依赖​\n​\n​\n​\n依赖​\n​\n\t\n​\n用途​\n​\n\n\n​\nvue​\n​\n\t\n​\n前端框架​\n​\n\n\n​\nvue-router​\n​\n\t\n​\n路由管理​\n​\n\n\n​\ntailwindcss​\n​\n\t\n​\nCSS 框架​\n​\n\n\n​\n@wailsio/runtime​\n​\n\t\n​\nWails 运行时​\n​\n​\n​\n​\n​\n​\n扩展与定制​\n​\n添加新的模型适配器​\n​\n1.\n在 internal/relay/self_implemented_*.go 中实现模型接口​\n2.\n在 ModelAdapterConfig 中添加新类型支持​\n3.\n更新 normalizeModelAdapterType() 函数​\n添加新的路由​\n​\n1.\n在 internal/runtime/local_runtime.go 中定义路由​\n2.\n在 gateway_handler.go 的 handleRoute() 中添加处理逻辑​\n​\n​\n​\n版本历史​\n​\nv0.0.1 (当前版本)​\n•\n初始版本​\n•\n支持 macOS (arm64/amd64) 和 Windows (amd64)​\n•\n实现 BYOK 模式​\n•\n支持 OpenAI 和 Anthropic 模型​\n​\n​\n​\n许可证​\n​\n© 2026, Cursor助手​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 18,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 838,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\n许可证\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n1.\n在 internal/relay/self_implemented_*.go 中实现模型接口​\n2.\n在 ModelAdapterConfig 中添加新类型支持​\n3.\n更新 normalizeModelAdapterType() 函数​\n添加新的路由​\n​\n1.\n在 internal/runtime/local_runtime.go 中定义路由​\n2.\n在 gateway_handler.go 的 handleRoute() 中添加处理逻辑​\n​\n​\n​\n版本历史​\n​\nv0.0.1 (当前版本)​\n•\n初始版本​\n•\n支持 macOS (arm64/amd64) 和 Windows (amd64)​\n•\n实现 BYOK 模式​\n•\n支持 OpenAI 和 Anthropic 模型​\n​\n​\n​\n许可证​\n​\n© 2026, Cursor助手​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    },
+    {
+      "i": 19,
+      "info": {
+        "h": 720,
+        "sh": 720,
+        "textLength": 838,
+        "y": 0
+      },
+      "text": "Feishu Docs\nL\nleokun's Docs\nShared With Me\nCursor助手 - 项目技术文档\nleokun\n\nCursor助手 - 项目技术文档\n\nLast updated: Jun 16\n\nLog In or Sign Up\n请求处理流程\nBYOK 模式流程\nProtocol Buffer 协议\n构建与开发\n开发环境要求\n常用命令\n输出产物\n配置说明\n用户配置文件\n代理设置\n错误处理\n常见错误码\n日志与观测\n日志文件\n调试模式\n安全考虑\n依赖说明\n主要 Go 依赖\n主要前端依赖\n扩展与定制\n添加新的模型适配器\n添加新的路由\n版本历史\n许可证\nCursor助手 - 项目技术文档​\nModified June 16\n​\n​\ncursor提示词与工具调用.zip\n82.23KB\n​\n​\n1.\n在 internal/relay/self_implemented_*.go 中实现模型接口​\n2.\n在 ModelAdapterConfig 中添加新类型支持​\n3.\n更新 normalizeModelAdapterType() 函数​\n添加新的路由​\n​\n1.\n在 internal/runtime/local_runtime.go 中定义路由​\n2.\n在 gateway_handler.go 的 handleRoute() 中添加处理逻辑​\n​\n​\n​\n版本历史​\n​\nv0.0.1 (当前版本)​\n•\n初始版本​\n•\n支持 macOS (arm64/amd64) 和 Windows (amd64)​\n•\n实现 BYOK 模式​\n•\n支持 OpenAI 和 Anthropic 模型​\n​\n​\n​\n许可证​\n​\n© 2026, Cursor助手​\n​\nComments (0)\nComments\nuser 1619\n11:13 AM Mar 23\nWin x86版本 运行不了哎\nHelp Center\nKeyboard Shortcuts"
+    }
+  ]
+}

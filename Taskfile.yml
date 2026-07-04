@@ -1,0 +1,87 @@
+version: "3"
+
+vars:
+  APP_NAME: "Cursor助手"
+  BIN_DIR: "bin"
+  WAILS: "./.tools/bin/wails3"
+  GO_CACHE: "./.cache/go-build"
+  GO_MOD_CACHE: "./.cache/go-mod"
+  FRONTEND_DIR: "frontend"
+
+env:
+  GOTOOLCHAIN: "go1.25.11"
+  GOCACHE: "{{.GO_CACHE}}"
+  GOMODCACHE: "{{.GO_MOD_CACHE}}"
+
+tasks:
+  dev:
+    desc: Start the Go bridge API
+    cmds:
+      - go run . --addr 127.0.0.1:8080 --proxy-addr 127.0.0.1:18080
+
+  dev:frontend:
+    desc: Start the Vue development server
+    dir: frontend
+    cmds:
+      - npm run dev
+
+  test:
+    desc: Run backend tests
+    cmds:
+      - go test ./...
+
+  build:frontend:
+    desc: Build Vue frontend assets
+    dir: frontend
+    cmds:
+      - npm run build
+
+  build:server:
+    desc: Build the HTTP server fallback binary
+    deps:
+      - build:frontend
+    cmds:
+      - go build -o {{.BIN_DIR}}/cursor-assistant-server .
+
+  build:desktop:
+    desc: Build the current-platform Wails desktop binary
+    deps:
+      - build:frontend
+    cmds:
+      - ./scripts/build_desktop_check.sh
+      - go build -tags desktop -o {{.BIN_DIR}}/cursor-assistant-desktop .
+
+  package:darwin:app:
+    desc: Create a current-architecture macOS .app bundle without distribution signing
+    cmds:
+      - ./scripts/package_darwin.sh
+
+  package:windows:zip:
+    desc: Cross-compile Windows zip packages
+    cmds:
+      - ./scripts/package_windows.sh amd64
+
+  package:release:
+    desc: Build local macOS and Windows distributable packages
+    cmds:
+      - task package:darwin:app
+      - task package:windows:zip
+
+  doctor:packaging:
+    desc: Check packaging prerequisites
+    cmds:
+      - ./scripts/doctor_packaging.sh
+
+  doctor:ci:
+    desc: Check whether GitHub Actions packaging can be triggered
+    cmds:
+      - ./scripts/check_ci_ready.sh
+
+  verify:
+    desc: Run backend tests plus frontend and desktop build checks
+    cmds:
+      - python3 scripts/verify_workflow.py
+      - go test ./...
+      - cd frontend && npm run build
+      - go build ./...
+      - ./scripts/build_desktop_check.sh
