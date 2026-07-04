@@ -75,6 +75,13 @@ Check whether the repository is ready to trigger GitHub Actions:
 ./scripts/check_ci_ready.sh
 ```
 
+After creating the GitHub repository:
+
+```bash
+git remote add origin https://github.com/<owner>/<repo>.git
+git push -u origin master
+```
+
 This workspace has Xcode 13.2.1 / macOS SDK 12.1. The macOS packaging script applies a local Wails compatibility patch so the `.app` can still be built.
 The local macOS script applies ad-hoc signing when `codesign` is available. Public distribution still needs Developer ID signing and notarization.
 

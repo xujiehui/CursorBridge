@@ -71,6 +71,20 @@ Check whether the repository is ready to trigger the workflow:
 ./scripts/check_ci_ready.sh
 ```
 
+Create a GitHub repository before the first remote run, then push the current branch:
+
+```bash
+git remote add origin https://github.com/<owner>/<repo>.git
+git push -u origin master
+```
+
+The first push to `master` runs verification and uploads package artifacts. To publish a GitHub Release after the first successful package run:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
 Triggers:
 
 - `workflow_dispatch`: manual package run from the Actions tab.
