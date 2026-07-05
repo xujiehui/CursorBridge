@@ -92,6 +92,34 @@ func TestHTTPHandlerServesStaticIndexAndSPAFallback(t *testing.T) {
 	}
 }
 
+func TestAssetMiddlewareHandlesAPIRoutes(t *testing.T) {
+	application, err := New(Options{DataDir: t.TempDir(), ProxyAddr: "127.0.0.1:0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, "Not Found", http.StatusNotFound)
+	})
+	handler := application.AssetMiddleware(next)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/setup/status", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("api route got status %d body %s", rec.Code, rec.Body.String())
+	}
+	if !strings.Contains(rec.Body.String(), `"modelConfigured"`) {
+		t.Fatalf("api route did not return setup JSON: %s", rec.Body.String())
+	}
+
+	req = httptest.NewRequest(http.MethodGet, "/assets/index.js", nil)
+	rec = httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("static route got status %d body %s", rec.Code, rec.Body.String())
+	}
+}
+
 func TestAdapterImportPreviewAndImport(t *testing.T) {
 	application, err := New(Options{DataDir: t.TempDir(), ProxyAddr: "127.0.0.1:0"})
 	if err != nil {

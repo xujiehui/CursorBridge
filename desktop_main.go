@@ -5,6 +5,7 @@ package main
 import (
 	"embed"
 	"log"
+	"net/http"
 
 	"cursorbridge/internal/app"
 	"cursorbridge/internal/desktop"
@@ -30,7 +31,10 @@ func main() {
 			application.NewService(desktop.NewService(applicationService)),
 		},
 		Assets: application.AssetOptions{
-			Handler: application.AssetFileServerFS(assets),
+			Handler: application.BundledAssetFileServer(assets),
+			Middleware: func(next http.Handler) http.Handler {
+				return applicationService.AssetMiddleware(next)
+			},
 		},
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,

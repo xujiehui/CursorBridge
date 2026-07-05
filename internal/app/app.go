@@ -341,6 +341,29 @@ func (a *App) Decision(input DecisionRequest) (relay.Decision, error) {
 
 func (a *App) HTTPHandler(staticDir string) http.Handler {
 	mux := http.NewServeMux()
+	a.mountAPIRoutes(mux)
+
+	if staticDir != "" {
+		mux.Handle("/", spaFileServer(staticDir))
+	}
+
+	return requestMiddleware(mux)
+}
+
+func (a *App) AssetMiddleware(next http.Handler) http.Handler {
+	apiHandler := http.NewServeMux()
+	a.mountAPIRoutes(apiHandler)
+	apiHandlerWithMiddleware := requestMiddleware(apiHandler)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/health" || strings.HasPrefix(r.URL.Path, "/api/") {
+			apiHandlerWithMiddleware.ServeHTTP(w, r)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (a *App) mountAPIRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /health", a.handleHealth)
 	mux.HandleFunc("GET /api/status", a.handleStatus)
 	mux.HandleFunc("GET /api/diagnostics", a.handleDiagnostics)
@@ -360,12 +383,6 @@ func (a *App) HTTPHandler(staticDir string) http.Handler {
 	mux.HandleFunc("POST /api/cursor/apply", a.handleCursorApply)
 	mux.HandleFunc("POST /api/relay/byok/chat/completions", a.handleBYOK)
 	mux.HandleFunc("POST /api/relay/decision", a.handleDecision)
-
-	if staticDir != "" {
-		mux.Handle("/", spaFileServer(staticDir))
-	}
-
-	return requestMiddleware(mux)
 }
 
 func spaFileServer(staticDir string) http.Handler {
