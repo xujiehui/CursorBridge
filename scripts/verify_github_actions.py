@@ -104,6 +104,12 @@ def api_json(url: str, token: str | None) -> dict:
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8", errors="replace")
         print(f"GitHub API error {exc.code}: {body}", file=sys.stderr)
+        if exc.code == 404 and not token:
+            print(
+                "If this is a private repository, set GH_TOKEN or GITHUB_TOKEN "
+                "with Actions read access and retry.",
+                file=sys.stderr,
+            )
         raise SystemExit(1) from exc
 
 
