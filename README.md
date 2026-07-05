@@ -56,6 +56,8 @@ The main console is intentionally model-first. A normal user only needs to confi
 
 Proxy, CA, log paths, and route preview are still available under advanced settings for troubleshooting.
 
+For a complete Chinese setup and usage walkthrough, see [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md).
+
 ## Third-Party Relay Import
 
 The console can import OpenAI-compatible or Anthropic-compatible relay channels from the BYOK adapter panel. Paste a JSON document, base64/base64url JSON, or an import link with query parameters.
