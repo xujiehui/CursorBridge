@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -361,10 +362,32 @@ func (a *App) HTTPHandler(staticDir string) http.Handler {
 	mux.HandleFunc("POST /api/relay/decision", a.handleDecision)
 
 	if staticDir != "" {
-		mux.Handle("/", http.FileServer(http.Dir(staticDir)))
+		mux.Handle("/", spaFileServer(staticDir))
 	}
 
 	return requestMiddleware(mux)
+}
+
+func spaFileServer(staticDir string) http.Handler {
+	fileServer := http.FileServer(http.Dir(staticDir))
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			path := filepath.Clean(strings.TrimPrefix(r.URL.Path, "/"))
+			fullPath := filepath.Join(staticDir, path)
+			rel, err := filepath.Rel(staticDir, fullPath)
+			if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+				http.NotFound(w, r)
+				return
+			}
+			if info, err := os.Stat(fullPath); err == nil && !info.IsDir() {
+				fileServer.ServeHTTP(w, r)
+				return
+			}
+		}
+		req := r.Clone(r.Context())
+		req.URL.Path = "/"
+		fileServer.ServeHTTP(w, req)
+	})
 }
 
 func requestMiddleware(next http.Handler) http.Handler {

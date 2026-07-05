@@ -87,11 +87,23 @@ func proxyAddrOption(value string, explicit bool) string {
 func staticDir() string {
 	candidates := []string{
 		filepath.Join("frontend", "dist"),
-		filepath.Join("dist"),
+		"dist",
+	}
+	if executable, err := os.Executable(); err == nil {
+		execDir := filepath.Dir(executable)
+		candidates = append(candidates,
+			filepath.Join(execDir, "frontend", "dist"),
+			filepath.Join(execDir, "dist"),
+			filepath.Join(execDir, "..", "Resources", "frontend", "dist"),
+			filepath.Join(execDir, "..", "Resources", "dist"),
+		)
 	}
 	for _, candidate := range candidates {
+		candidate = filepath.Clean(candidate)
 		if info, err := os.Stat(candidate); err == nil && info.IsDir() {
-			return candidate
+			if _, err := os.Stat(filepath.Join(candidate, "index.html")); err == nil {
+				return candidate
+			}
 		}
 	}
 	fmt.Println("frontend/dist not found; serving API only")

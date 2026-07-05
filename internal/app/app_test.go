@@ -6,6 +6,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"cursorbridge/internal/config"
@@ -54,6 +57,38 @@ func TestStatusCAAndDecision(t *testing.T) {
 	handler.ServeHTTP(rec, req)
 	if rec.Code != http.StatusOK {
 		t.Fatalf("decision got status %d body %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestHTTPHandlerServesStaticIndexAndSPAFallback(t *testing.T) {
+	application, err := New(Options{DataDir: t.TempDir(), ProxyAddr: "127.0.0.1:0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	staticDir := t.TempDir()
+	index := []byte(`<!doctype html><html><body><div id="app"></div></body></html>`)
+	if err := os.WriteFile(filepath.Join(staticDir, "index.html"), index, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	handler := application.HTTPHandler(staticDir)
+
+	for _, path := range []string{"/", "/settings/model"} {
+		req := httptest.NewRequest(http.MethodGet, path, nil)
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+		if rec.Code != http.StatusOK {
+			t.Fatalf("%s got status %d body %s", path, rec.Code, rec.Body.String())
+		}
+		if !strings.Contains(rec.Body.String(), `<div id="app">`) {
+			t.Fatalf("%s did not serve index.html: %s", path, rec.Body.String())
+		}
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/status", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("api route got status %d body %s", rec.Code, rec.Body.String())
 	}
 }
 
