@@ -26,6 +26,19 @@ export interface UserConfig {
   modelAdapters: ModelAdapter[]
 }
 
+export interface AdapterUpsertReport {
+  imported: number
+  updated: number
+}
+
+export interface AdapterImportResponse {
+  sourceType: string
+  adapters: ModelAdapter[]
+  warnings: string[]
+  report?: AdapterUpsertReport
+  config?: RuntimeConfigSnapshot
+}
+
 export interface ProxyStatus {
   addr: string
   running: boolean
@@ -38,6 +51,16 @@ export interface AppStatus {
   proxy: ProxyStatus
   config: RuntimeConfigSnapshot
   cursor: Record<string, unknown>
+}
+
+export interface SetupStatus {
+  ready: boolean
+  modelConfigured: boolean
+  enabledAdapters: number
+  proxy: ProxyStatus
+  cursor: CursorPlan
+  warnings: string[]
+  nextActions: string[]
 }
 
 export interface DiagnosticItem {

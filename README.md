@@ -6,11 +6,13 @@ Cursor Assistant is a local desktop-app foundation for routing Cursor IDE traffi
 
 This repository contains a Wails desktop application and HTTP fallback server:
 
+- Model-first setup: users configure AI model channels, and the app prepares the local bridge
 - Bridge API on `127.0.0.1:8080`
-- Local proxy on `127.0.0.1:18080`
+- Local proxy on `127.0.0.1:18080`, started from the setup flow
 - HTTP forwarding and TLS MITM for CONNECT traffic after the generated CA is trusted
 - Relay routing with `x-raw-cursor-server-url`
 - BYOK JSON gateway for OpenAI-compatible and Anthropic-compatible adapters
+- One-click import for third-party relay configurations via JSON, base64 JSON, or import links
 - Local config file under the user config directory
 - Local CA generation and per-host server certificate generation
 - Cursor settings preview/apply API
@@ -43,6 +45,40 @@ npm run dev
 ```
 
 Open the Vite URL and use the console against `http://127.0.0.1:8080`.
+
+## Model Setup
+
+The main console is intentionally model-first. A normal user only needs to configure an AI model channel:
+
+1. Paste a third-party relay import config, or fill `Base URL`, `API Key`, and `Model ID`.
+2. Click import/save.
+3. The app starts the local bridge and applies Cursor proxy settings from the same flow.
+
+Proxy, CA, log paths, and route preview are still available under advanced settings for troubleshooting.
+
+## Third-Party Relay Import
+
+The console can import OpenAI-compatible or Anthropic-compatible relay channels from the BYOK adapter panel. Paste a JSON document, base64/base64url JSON, or an import link with query parameters.
+
+Supported fields include camelCase and snake_case variants:
+
+```json
+{
+  "name": "Example Relay",
+  "type": "openai",
+  "baseURL": "https://relay.example.com/v1",
+  "apiKey": "sk-xxx",
+  "models": ["gpt-4o", "gpt-4.1"]
+}
+```
+
+Equivalent links also work, for example:
+
+```text
+cursorbridge://import?name=Example%20Relay&baseURL=https%3A%2F%2Frelay.example.com%2Fv1&apiKey=sk-xxx&models=gpt-4o%2Cgpt-4.1
+```
+
+Imported models are saved as BYOK adapters and are selected in Cursor requests as `byok/<modelID>`.
 
 ## Verify
 

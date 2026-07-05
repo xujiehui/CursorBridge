@@ -57,6 +57,117 @@ func TestStatusCAAndDecision(t *testing.T) {
 	}
 }
 
+func TestAdapterImportPreviewAndImport(t *testing.T) {
+	application, err := New(Options{DataDir: t.TempDir(), ProxyAddr: "127.0.0.1:0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler := application.HTTPHandler("")
+
+	body, _ := json.Marshal(map[string]string{
+		"source": `{
+			"name": "Example Relay",
+			"baseURL": "https://relay.example.com/v1/chat/completions",
+			"apiKey": "sk-relay",
+			"models": ["gpt-4o"]
+		}`,
+	})
+	req := httptest.NewRequest(http.MethodPost, "/api/adapters/import/preview", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("preview got status %d body %s", rec.Code, rec.Body.String())
+	}
+	var preview AdapterImportResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &preview); err != nil {
+		t.Fatal(err)
+	}
+	if len(preview.Adapters) != 1 {
+		t.Fatalf("preview adapter count got %d", len(preview.Adapters))
+	}
+	if preview.Adapters[0].APIKey != "********" {
+		t.Fatalf("preview leaked api key: %q", preview.Adapters[0].APIKey)
+	}
+	if preview.Adapters[0].BaseURL != "https://relay.example.com/v1" {
+		t.Fatalf("preview baseURL got %q", preview.Adapters[0].BaseURL)
+	}
+
+	req = httptest.NewRequest(http.MethodPost, "/api/adapters/import", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	rec = httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("import got status %d body %s", rec.Code, rec.Body.String())
+	}
+	var result AdapterImportResponse
+	if err := json.Unmarshal(rec.Body.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if result.Report.Imported != 1 || result.Report.Updated != 0 {
+		t.Fatalf("report got %+v", result.Report)
+	}
+	if len(application.Status().Config.ModelAdapters) != 1 {
+		t.Fatalf("status adapter count got %d", len(application.Status().Config.ModelAdapters))
+	}
+}
+
+func TestSetupStatusTracksModelProxyAndCursor(t *testing.T) {
+	application, err := New(Options{DataDir: t.TempDir(), ProxyAddr: "127.0.0.1:0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	setup := application.SetupStatus()
+	if setup.ModelConfigured {
+		t.Fatal("setup should not report model configured without adapters")
+	}
+	if setup.Ready {
+		t.Fatal("setup should not be ready without a model and proxy")
+	}
+
+	if _, err := application.UpsertAdapter(config.ModelAdapter{
+		ID: "relay", DisplayName: "Relay", Type: config.AdapterOpenAI,
+		BaseURL: "https://relay.example.com/v1", APIKey: "sk", ModelID: "gpt-4o", Enabled: true,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	setup = application.SetupStatus()
+	if !setup.ModelConfigured || setup.EnabledAdapters != 1 {
+		t.Fatalf("expected one configured model, got %+v", setup)
+	}
+	if len(setup.NextActions) == 0 {
+		t.Fatal("expected setup to expose remaining local bridge actions")
+	}
+}
+
+func TestPrepareSetupStartsProxyAndAppliesCursorSettings(t *testing.T) {
+	application, err := New(Options{DataDir: t.TempDir(), ProxyAddr: "127.0.0.1:0"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := application.UpsertAdapter(config.ModelAdapter{
+		ID: "relay", DisplayName: "Relay", Type: config.AdapterOpenAI,
+		BaseURL: "https://relay.example.com/v1", APIKey: "sk", ModelID: "gpt-4o", Enabled: true,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		_ = application.StopProxy(context.Background())
+	}()
+
+	setup, err := application.PrepareSetup(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !setup.Proxy.Running {
+		t.Fatalf("proxy should be running after prepare: %+v", setup)
+	}
+	if !setup.ModelConfigured {
+		t.Fatalf("model should be configured after prepare: %+v", setup)
+	}
+}
+
 func TestSaveConfigSyncsStoppedProxyAddr(t *testing.T) {
 	application, err := New(Options{DataDir: t.TempDir(), ProxyAddr: "127.0.0.1:0"})
 	if err != nil {

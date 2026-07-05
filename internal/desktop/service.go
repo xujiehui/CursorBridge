@@ -27,6 +27,14 @@ func (s *Service) Diagnostics() app.Diagnostics {
 	return s.app.Diagnostics()
 }
 
+func (s *Service) SetupStatus() app.SetupStatus {
+	return s.app.SetupStatus()
+}
+
+func (s *Service) PrepareSetup() (app.SetupStatus, error) {
+	return s.app.PrepareSetup(context.Background())
+}
+
 func (s *Service) Config() config.RuntimeConfigSnapshot {
 	return s.app.Config()
 }
@@ -41,6 +49,14 @@ func (s *Service) UpsertAdapter(adapter config.ModelAdapter) (config.RuntimeConf
 
 func (s *Service) DeleteAdapter(id string) (config.RuntimeConfigSnapshot, error) {
 	return s.app.DeleteAdapter(id)
+}
+
+func (s *Service) PreviewAdapterImport(source string) (app.AdapterImportResponse, error) {
+	return s.app.PreviewAdapterImport(source)
+}
+
+func (s *Service) ImportAdapters(source string) (app.AdapterImportResponse, error) {
+	return s.app.ImportAdapters(source)
 }
 
 func (s *Service) StartProxy() (mitm.Status, error) {

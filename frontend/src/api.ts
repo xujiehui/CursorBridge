@@ -1,4 +1,5 @@
 import type {
+  AdapterImportResponse,
   AppStatus,
   CAInfo,
   CursorPlan,
@@ -7,6 +8,7 @@ import type {
   ModelAdapter,
   ProxyStatus,
   RuntimeConfigSnapshot,
+  SetupStatus,
   UserConfig
 } from './types'
 
@@ -14,10 +16,14 @@ const baseURL = import.meta.env.VITE_API_BASE_URL ?? ''
 type DesktopService = {
   Status?: () => Promise<AppStatus>
   Diagnostics?: () => Promise<Diagnostics>
+  SetupStatus?: () => Promise<SetupStatus>
+  PrepareSetup?: () => Promise<SetupStatus>
   Config?: () => Promise<RuntimeConfigSnapshot>
   SaveConfig?: (config: UserConfig) => Promise<RuntimeConfigSnapshot>
   UpsertAdapter?: (adapter: ModelAdapter) => Promise<RuntimeConfigSnapshot>
   DeleteAdapter?: (id: string) => Promise<RuntimeConfigSnapshot>
+  PreviewAdapterImport?: (source: string) => Promise<AdapterImportResponse>
+  ImportAdapters?: (source: string) => Promise<AdapterImportResponse>
   StartProxy?: () => Promise<ProxyStatus>
   StopProxy?: () => Promise<ProxyStatus>
   CAInfo?: () => Promise<CAInfo>
@@ -75,6 +81,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 export const api = {
   status: () => desktopService()?.Status?.() ?? request<AppStatus>('/api/status'),
   diagnostics: () => desktopService()?.Diagnostics?.() ?? request<Diagnostics>('/api/diagnostics'),
+  setupStatus: () => desktopService()?.SetupStatus?.() ?? request<SetupStatus>('/api/setup/status'),
+  prepareSetup: () =>
+    desktopService()?.PrepareSetup?.() ?? request<SetupStatus>('/api/setup/prepare', { method: 'POST' }),
   config: () => desktopService()?.Config?.() ?? request<RuntimeConfigSnapshot>('/api/config'),
   saveConfig: (config: UserConfig) =>
     desktopService()?.SaveConfig?.(config) ?? request<RuntimeConfigSnapshot>('/api/config', {
@@ -89,6 +98,18 @@ export const api = {
   deleteAdapter: (id: string) =>
     desktopService()?.DeleteAdapter?.(id) ?? request<RuntimeConfigSnapshot>(`/api/adapters/${encodeURIComponent(id)}`, {
       method: 'DELETE'
+    }),
+  previewAdapterImport: (source: string) =>
+    desktopService()?.PreviewAdapterImport?.(source) ??
+    request<AdapterImportResponse>('/api/adapters/import/preview', {
+      method: 'POST',
+      body: JSON.stringify({ source })
+    }),
+  importAdapters: (source: string) =>
+    desktopService()?.ImportAdapters?.(source) ??
+    request<AdapterImportResponse>('/api/adapters/import', {
+      method: 'POST',
+      body: JSON.stringify({ source })
     }),
   startProxy: () =>
     desktopService()?.StartProxy?.() ?? request<ProxyStatus>('/api/proxy/start', { method: 'POST' }),

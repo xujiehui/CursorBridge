@@ -43,6 +43,11 @@ type ModelAdapter struct {
 	Enabled     bool        `json:"enabled"`
 }
 
+type AdapterUpsertReport struct {
+	Imported int `json:"imported"`
+	Updated  int `json:"updated"`
+}
+
 type RuntimeConfigSnapshot struct {
 	BaseURL                 string         `json:"baseURL"`
 	LicenseCodeConfigured   bool           `json:"licenseCodeConfigured"`
@@ -141,6 +146,52 @@ func (s *Store) UpsertAdapter(adapter ModelAdapter) (UserConfig, error) {
 		return UserConfig{}, err
 	}
 	return cloneConfig(s.config), nil
+}
+
+func (s *Store) UpsertAdapters(adapters []ModelAdapter) (AdapterUpsertReport, UserConfig, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if len(adapters) == 0 {
+		return AdapterUpsertReport{}, UserConfig{}, errors.New("at least one adapter is required")
+	}
+
+	next := cloneConfig(s.config)
+	report := AdapterUpsertReport{}
+	seenIncoming := map[string]bool{}
+	for _, adapter := range adapters {
+		adapter = normalizeAdapter(adapter)
+		adapter = s.preserveAdapterSecretLocked(adapter)
+		if err := validateAdapter(adapter); err != nil {
+			return AdapterUpsertReport{}, UserConfig{}, err
+		}
+		if seenIncoming[adapter.ID] {
+			return AdapterUpsertReport{}, UserConfig{}, fmt.Errorf("duplicate imported adapter id %q", adapter.ID)
+		}
+		seenIncoming[adapter.ID] = true
+
+		found := false
+		for i := range next.ModelAdapters {
+			if next.ModelAdapters[i].ID == adapter.ID {
+				next.ModelAdapters[i] = adapter
+				found = true
+				report.Updated++
+				break
+			}
+		}
+		if !found {
+			next.ModelAdapters = append(next.ModelAdapters, adapter)
+			report.Imported++
+		}
+	}
+	if err := Validate(next); err != nil {
+		return AdapterUpsertReport{}, UserConfig{}, err
+	}
+	s.config = cloneConfig(next)
+	if err := s.writeLocked(); err != nil {
+		return AdapterUpsertReport{}, UserConfig{}, err
+	}
+	return report, cloneConfig(s.config), nil
 }
 
 func (s *Store) DeleteAdapter(id string) (UserConfig, error) {
@@ -277,7 +328,7 @@ func validateAdapter(adapter ModelAdapter) error {
 	if adapter.Type != AdapterOpenAI && adapter.Type != AdapterAnthropic {
 		return fmt.Errorf("unsupported adapter type %q", adapter.Type)
 	}
-	if _, err := url.ParseRequestURI(adapter.BaseURL); err != nil {
+	if err := validateAdapterBaseURL(adapter.BaseURL); err != nil {
 		return fmt.Errorf("invalid adapter baseURL: %w", err)
 	}
 	if strings.TrimSpace(adapter.APIKey) == "" {
@@ -285,6 +336,20 @@ func validateAdapter(adapter ModelAdapter) error {
 	}
 	if strings.TrimSpace(adapter.ModelID) == "" {
 		return errors.New("adapter modelID is required")
+	}
+	return nil
+}
+
+func validateAdapterBaseURL(baseURL string) error {
+	parsed, err := url.ParseRequestURI(baseURL)
+	if err != nil {
+		return err
+	}
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return errors.New("adapter baseURL must use http or https scheme")
+	}
+	if parsed.Host == "" {
+		return errors.New("adapter baseURL must include a host")
 	}
 	return nil
 }
@@ -319,7 +384,18 @@ func normalizeAdapter(adapter ModelAdapter) ModelAdapter {
 	adapter.BaseURL = strings.TrimRight(strings.TrimSpace(adapter.BaseURL), "/")
 	adapter.APIKey = strings.TrimSpace(adapter.APIKey)
 	adapter.ModelID = strings.TrimPrefix(strings.TrimSpace(adapter.ModelID), "byok/")
+	adapter.BaseURL = normalizeAdapterBaseURL(adapter.Type, adapter.BaseURL)
 	return adapter
+}
+
+func normalizeAdapterBaseURL(adapterType AdapterType, baseURL string) string {
+	baseURL = strings.TrimRight(baseURL, "/")
+	switch adapterType {
+	case AdapterAnthropic:
+		return strings.TrimSuffix(baseURL, "/messages")
+	default:
+		return strings.TrimSuffix(baseURL, "/chat/completions")
+	}
 }
 
 func (s *Store) preserveSecretsLocked(next UserConfig) UserConfig {

@@ -49,6 +49,16 @@ type Diagnostics struct {
 	NextActions []string          `json:"nextActions"`
 }
 
+type SetupStatus struct {
+	Ready           bool                `json:"ready"`
+	ModelConfigured bool                `json:"modelConfigured"`
+	EnabledAdapters int                 `json:"enabledAdapters"`
+	Proxy           mitm.Status         `json:"proxy"`
+	Cursor          cursor.SettingsPlan `json:"cursor"`
+	Warnings        []string            `json:"warnings"`
+	NextActions     []string            `json:"nextActions"`
+}
+
 type DiagnosticItem struct {
 	ID      string `json:"id"`
 	Label   string `json:"label"`
@@ -61,6 +71,18 @@ type DecisionRequest struct {
 	Method  string            `json:"method"`
 	Path    string            `json:"path"`
 	Headers map[string]string `json:"headers"`
+}
+
+type AdapterImportRequest struct {
+	Source string `json:"source"`
+}
+
+type AdapterImportResponse struct {
+	SourceType string                        `json:"sourceType"`
+	Adapters   []config.ModelAdapter         `json:"adapters"`
+	Warnings   []string                      `json:"warnings"`
+	Report     *config.AdapterUpsertReport   `json:"report,omitempty"`
+	Config     *config.RuntimeConfigSnapshot `json:"config,omitempty"`
 }
 
 func New(options Options) (*App, error) {
@@ -112,7 +134,7 @@ func (a *App) Diagnostics() Diagnostics {
 	status := a.Status()
 	caInfo, caErr := a.CAInfo()
 	cursorPlan, cursorErr := a.CursorPlan()
-	adapterCount := len(status.Config.ModelAdapters)
+	adapterCount := countEnabledAdapters(status.Config.ModelAdapters)
 
 	items := []DiagnosticItem{
 		{
@@ -193,6 +215,23 @@ func (a *App) StopProxy(ctx context.Context) error {
 	return nil
 }
 
+func (a *App) SetupStatus() SetupStatus {
+	return a.setupStatus(nil)
+}
+
+func (a *App) PrepareSetup(ctx context.Context) (SetupStatus, error) {
+	warnings := []string{}
+	if !a.proxy.Status().Running {
+		if _, err := a.StartProxy(ctx); err != nil {
+			warnings = append(warnings, "启动本地桥接失败: "+err.Error())
+		}
+	}
+	if err := a.ApplyCursorSettings(); err != nil {
+		warnings = append(warnings, "写入 Cursor 设置失败: "+err.Error())
+	}
+	return a.setupStatus(warnings), nil
+}
+
 func (a *App) Config() config.RuntimeConfigSnapshot {
 	return a.config.Snapshot()
 }
@@ -223,6 +262,37 @@ func (a *App) DeleteAdapter(id string) (config.RuntimeConfigSnapshot, error) {
 		return config.RuntimeConfigSnapshot{}, err
 	}
 	return a.config.Snapshot(), nil
+}
+
+func (a *App) PreviewAdapterImport(source string) (AdapterImportResponse, error) {
+	preview, err := config.ParseAdapterImportSource(source)
+	if err != nil {
+		return AdapterImportResponse{}, err
+	}
+	return AdapterImportResponse{
+		SourceType: preview.SourceType,
+		Adapters:   maskAdapterSecrets(preview.Adapters),
+		Warnings:   preview.Warnings,
+	}, nil
+}
+
+func (a *App) ImportAdapters(source string) (AdapterImportResponse, error) {
+	preview, err := config.ParseAdapterImportSource(source)
+	if err != nil {
+		return AdapterImportResponse{}, err
+	}
+	report, _, err := a.config.UpsertAdapters(preview.Adapters)
+	if err != nil {
+		return AdapterImportResponse{}, err
+	}
+	snapshot := a.config.Snapshot()
+	return AdapterImportResponse{
+		SourceType: preview.SourceType,
+		Adapters:   maskAdapterSecrets(preview.Adapters),
+		Warnings:   preview.Warnings,
+		Report:     &report,
+		Config:     &snapshot,
+	}, nil
 }
 
 func (a *App) CAInfo() (certs.CAInfo, error) {
@@ -273,9 +343,13 @@ func (a *App) HTTPHandler(staticDir string) http.Handler {
 	mux.HandleFunc("GET /health", a.handleHealth)
 	mux.HandleFunc("GET /api/status", a.handleStatus)
 	mux.HandleFunc("GET /api/diagnostics", a.handleDiagnostics)
+	mux.HandleFunc("GET /api/setup/status", a.handleSetupStatus)
+	mux.HandleFunc("POST /api/setup/prepare", a.handlePrepareSetup)
 	mux.HandleFunc("GET /api/config", a.handleGetConfig)
 	mux.HandleFunc("PUT /api/config", a.handleSaveConfig)
 	mux.HandleFunc("POST /api/adapters", a.handleUpsertAdapter)
+	mux.HandleFunc("POST /api/adapters/import/preview", a.handlePreviewAdapterImport)
+	mux.HandleFunc("POST /api/adapters/import", a.handleImportAdapters)
 	mux.HandleFunc("DELETE /api/adapters/", a.handleDeleteAdapter)
 	mux.HandleFunc("POST /api/proxy/start", a.handleStartProxy)
 	mux.HandleFunc("POST /api/proxy/stop", a.handleStopProxy)
@@ -325,6 +399,19 @@ func (a *App) handleDiagnostics(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, a.Diagnostics())
 }
 
+func (a *App) handleSetupStatus(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, a.SetupStatus())
+}
+
+func (a *App) handlePrepareSetup(w http.ResponseWriter, r *http.Request) {
+	status, err := a.PrepareSetup(r.Context())
+	if err != nil {
+		writeError(w, apperrors.Wrap(apperrors.ErrInvalidSystemSetting, "prepare local bridge", http.StatusInternalServerError, err))
+		return
+	}
+	writeJSON(w, http.StatusOK, status)
+}
+
 func (a *App) handleGetConfig(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, a.Config())
 }
@@ -369,6 +456,34 @@ func (a *App) handleDeleteAdapter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, snapshot)
+}
+
+func (a *App) handlePreviewAdapterImport(w http.ResponseWriter, r *http.Request) {
+	var body AdapterImportRequest
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 2<<20)).Decode(&body); err != nil {
+		writeError(w, apperrors.BadRequest("invalid adapter import request"))
+		return
+	}
+	preview, err := a.PreviewAdapterImport(body.Source)
+	if err != nil {
+		writeError(w, apperrors.Wrap(apperrors.ErrInvalidSystemSetting, "preview adapter import", http.StatusBadRequest, err))
+		return
+	}
+	writeJSON(w, http.StatusOK, preview)
+}
+
+func (a *App) handleImportAdapters(w http.ResponseWriter, r *http.Request) {
+	var body AdapterImportRequest
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 2<<20)).Decode(&body); err != nil {
+		writeError(w, apperrors.BadRequest("invalid adapter import request"))
+		return
+	}
+	result, err := a.ImportAdapters(body.Source)
+	if err != nil {
+		writeError(w, apperrors.Wrap(apperrors.ErrInvalidSystemSetting, "import adapters", http.StatusBadRequest, err))
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
 }
 
 func (a *App) handleStartProxy(w http.ResponseWriter, r *http.Request) {
@@ -512,6 +627,44 @@ func adapterDetail(count int) string {
 	return strconv.Itoa(count) + " adapters configured"
 }
 
+func (a *App) setupStatus(warnings []string) SetupStatus {
+	appStatus := a.Status()
+	cursorPlan, err := a.CursorPlan()
+	if err != nil {
+		warnings = append(warnings, "读取 Cursor 设置失败: "+err.Error())
+	}
+	enabledAdapters := countEnabledAdapters(appStatus.Config.ModelAdapters)
+	nextActions := []string{}
+	if enabledAdapters == 0 {
+		nextActions = append(nextActions, "配置 AI 模型")
+	}
+	if !appStatus.Proxy.Running {
+		nextActions = append(nextActions, "启动本地桥接")
+	}
+	if err == nil && !cursorPlan.Applied {
+		nextActions = append(nextActions, "应用 Cursor 设置")
+	}
+	return SetupStatus{
+		Ready:           enabledAdapters > 0 && appStatus.Proxy.Running && err == nil && cursorPlan.Applied,
+		ModelConfigured: enabledAdapters > 0,
+		EnabledAdapters: enabledAdapters,
+		Proxy:           appStatus.Proxy,
+		Cursor:          cursorPlan,
+		Warnings:        warnings,
+		NextActions:     nextActions,
+	}
+}
+
+func countEnabledAdapters(adapters []config.ModelAdapter) int {
+	count := 0
+	for _, adapter := range adapters {
+		if adapter.Enabled {
+			count++
+		}
+	}
+	return count
+}
+
 func allHealthy(items []DiagnosticItem) bool {
 	for _, item := range items {
 		if !item.Healthy {
@@ -519,6 +672,17 @@ func allHealthy(items []DiagnosticItem) bool {
 		}
 	}
 	return true
+}
+
+func maskAdapterSecrets(adapters []config.ModelAdapter) []config.ModelAdapter {
+	masked := make([]config.ModelAdapter, len(adapters))
+	for i, adapter := range adapters {
+		masked[i] = adapter
+		if masked[i].APIKey != "" {
+			masked[i].APIKey = "********"
+		}
+	}
+	return masked
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload any) {
