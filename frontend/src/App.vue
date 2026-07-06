@@ -25,6 +25,8 @@ const loading = ref(false)
 const notice = ref('')
 const error = ref('')
 const showAdvanced = ref(false)
+const showAdapterOptions = ref(false)
+const configMode = ref<'import' | 'manual'>('import')
 const lastRefresh = ref<Date | null>(null)
 let refreshTimer: number | undefined
 
@@ -58,7 +60,7 @@ const importForm = reactive({
 
 const adapters = computed(() => status.value?.config.modelAdapters ?? [])
 const enabledAdapters = computed(() => adapters.value.filter((adapter) => adapter.enabled))
-const readyLabel = computed(() => (setup.value?.ready ? '可用' : '待配置'))
+const readyLabel = computed(() => (setup.value?.ready ? '已就绪' : '待准备'))
 const setupWarnings = computed(() => setup.value?.warnings ?? [])
 const setupActions = computed(() => setup.value?.nextActions ?? [])
 const importAdaptersPreview = computed(() => importPreview.value?.adapters ?? [])
@@ -73,6 +75,27 @@ const currentAdapter = computed(() => enabledAdapters.value[0] ?? adapters.value
 const lastRefreshLabel = computed(() =>
   lastRefresh.value ? lastRefresh.value.toLocaleTimeString([], { hour12: false }) : '--'
 )
+const setupSteps = computed(() => [
+  {
+    id: 'model',
+    label: '模型',
+    value: enabledAdapters.value.length ? `${enabledAdapters.value.length} 个` : '未配置',
+    done: Boolean(setup.value?.modelConfigured || enabledAdapters.value.length)
+  },
+  {
+    id: 'bridge',
+    label: '桥接',
+    value: setup.value?.proxy.running ? '运行中' : '未启动',
+    done: Boolean(setup.value?.proxy.running)
+  },
+  {
+    id: 'cursor',
+    label: 'Cursor',
+    value: setup.value?.cursor.applied ? '已应用' : '待应用',
+    done: Boolean(setup.value?.cursor.applied)
+  }
+])
+const primaryAdapterLabel = computed(() => currentAdapter.value?.displayName ?? '未选择')
 
 function syncForm(next: AppStatus) {
   configForm.baseURL = next.config.baseURL
@@ -114,8 +137,15 @@ async function refresh(silent = false) {
 
 async function saveAdapter() {
   await action('', async () => {
-    await api.upsertAdapter({ ...adapterForm })
-    const model = adapterForm.modelID ? `byok/${stripByok(adapterForm.modelID)}` : routeForm.model
+    const modelID = stripByok(adapterForm.modelID)
+    const adapter = {
+      ...adapterForm,
+      id: adapterForm.id.trim() || adapterIDPlaceholder(),
+      displayName: adapterForm.displayName.trim() || modelID,
+      modelID
+    }
+    await api.upsertAdapter(adapter)
+    const model = modelID ? `byok/${modelID}` : routeForm.model
     setup.value = await api.prepareSetup()
     notice.value = setup.value.ready ? '模型配置已保存，本地桥接已准备好' : '模型配置已保存'
     resetAdapter()
@@ -228,6 +258,8 @@ async function action(message: string, work: () => Promise<void>) {
 function editAdapter(adapter: ModelAdapter) {
   Object.assign(adapterForm, adapter, { apiKey: '' })
   routeForm.model = `byok/${adapter.modelID}`
+  configMode.value = 'manual'
+  showAdapterOptions.value = true
 }
 
 function resetAdapter() {
@@ -240,11 +272,14 @@ function resetAdapter() {
     modelID: '',
     enabled: true
   })
+  showAdapterOptions.value = false
 }
 
 function useImportedAdapter(adapter: ModelAdapter) {
   Object.assign(adapterForm, adapter, { apiKey: '' })
   routeForm.model = `byok/${adapter.modelID}`
+  configMode.value = 'manual'
+  showAdapterOptions.value = true
 }
 
 function clearImportSource() {
@@ -292,81 +327,90 @@ onBeforeUnmount(() => {
 
 <template>
   <main class="shell">
-    <section class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">Cursor助手</p>
-        <h1>配置 AI 模型，剩下交给本地桥接</h1>
-        <p class="subtle">像 cc switch 一样管理模型渠道：粘贴中转站配置，或手动填写 Base URL、API Key 和模型名。</p>
+    <header class="topbar">
+      <div class="brand">
+        <p class="eyebrow">CursorBridge</p>
+        <h1>模型配置</h1>
       </div>
-      <div class="hero-actions">
-        <span class="pill" :class="setup?.ready ? 'good' : 'pending'">{{ readyLabel }}</span>
-        <button class="icon-button" :disabled="loading" title="刷新" @click="refresh()">↻</button>
+      <div class="topbar-actions">
+        <span class="status-chip" :class="setup?.ready ? 'good' : 'pending'">{{ readyLabel }}</span>
+        <button class="icon-button" :disabled="loading" title="刷新" aria-label="刷新" @click="refresh()">↻</button>
       </div>
+    </header>
+
+    <section class="status-strip" aria-label="准备状态">
+      <article v-for="item in setupSteps" :key="item.id" class="status-item" :class="{ complete: item.done }">
+        <span>{{ item.label }}</span>
+        <strong>{{ item.value }}</strong>
+      </article>
+      <article class="status-item current">
+        <span>当前渠道</span>
+        <strong>{{ primaryAdapterLabel }}</strong>
+      </article>
     </section>
 
-    <div class="alerts">
+    <section class="alerts" aria-live="polite">
       <div v-if="notice" class="notice">{{ notice }}</div>
       <div v-if="error" class="error">{{ error }}</div>
       <div v-if="setupWarnings.length" class="warning-list inline">
         <span v-for="item in setupWarnings" :key="item">{{ item }}</span>
       </div>
-    </div>
-
-    <section class="quick-status">
-      <article>
-        <span>模型配置</span>
-        <strong>{{ enabledAdapters.length ? `${enabledAdapters.length} 个已启用` : '未配置' }}</strong>
-      </article>
-      <article>
-        <span>本地桥接</span>
-        <strong :class="setup?.proxy.running ? 'ok' : 'warn'">
-          {{ setup?.proxy.running ? '运行中' : '未启动' }}
-        </strong>
-      </article>
-      <article>
-        <span>Cursor</span>
-        <strong :class="setup?.cursor.applied ? 'ok' : 'warn'">
-          {{ setup?.cursor.applied ? '已应用' : '待应用' }}
-        </strong>
-      </article>
-      <article>
-        <span>当前渠道</span>
-        <strong>{{ currentAdapter?.displayName ?? '待选择' }}</strong>
-      </article>
     </section>
 
-    <section v-if="setupActions.length" class="next-actions">
-      <strong>下一步</strong>
-      <span v-for="item in setupActions" :key="item">{{ item }}</span>
-      <button class="secondary" :disabled="loading" @click="prepareLocalBridge">自动准备</button>
+    <section v-if="setupActions.length" class="action-bar">
+      <div>
+        <strong>待处理</strong>
+        <span>{{ setupActions.join(' · ') }}</span>
+      </div>
+      <button class="secondary" :disabled="loading" @click="prepareLocalBridge">一键准备</button>
     </section>
 
-    <section class="main-layout">
-      <section class="panel primary-panel">
-        <div class="panel-head">
-          <div>
-            <p class="section-kicker">一键导入</p>
-            <h2>粘贴中转站配置</h2>
-          </div>
-          <button :disabled="loading || !importForm.source.trim()" @click="previewAdapterImport">预览</button>
+    <section class="panel setup-panel">
+      <div class="panel-head">
+        <div>
+          <p class="section-kicker">快速配置</p>
+          <h2>中转站与模型</h2>
         </div>
+        <div class="segmented" role="tablist" aria-label="配置方式">
+          <button
+            type="button"
+            :class="{ active: configMode === 'import' }"
+            @click="configMode = 'import'"
+          >
+            粘贴导入
+          </button>
+          <button
+            type="button"
+            :class="{ active: configMode === 'manual' }"
+            @click="configMode = 'manual'"
+          >
+            手动填写
+          </button>
+        </div>
+      </div>
+
+      <div v-if="configMode === 'import'" class="mode-panel">
         <label>
           配置内容
           <textarea
             v-model="importForm.source"
-            placeholder='粘贴 cc switch 风格配置、导入链接、base64 JSON，或 {"baseURL":"https://api.example.com/v1","apiKey":"sk-...","models":["gpt-4o"]}'
+            placeholder='{"baseURL":"https://api.example.com/v1","apiKey":"sk-...","models":["gpt-4o"]}'
             autocomplete="off"
           />
         </label>
         <div class="button-row">
+          <button class="secondary" :disabled="loading || !importForm.source.trim()" @click="previewAdapterImport">
+            预览
+          </button>
           <button :disabled="loading || !importAdaptersPreview.length" @click="importAdaptersFromSource">
             导入并应用
           </button>
-          <button class="ghost" :disabled="loading && !importForm.source" @click="clearImportSource">清空</button>
+          <button class="ghost" :disabled="loading || !importForm.source" @click="clearImportSource">清空</button>
         </div>
+
         <div v-if="importPreview" class="import-summary">
           <span>来源 {{ importPreview.sourceType }}</span>
-          <span>{{ importAdaptersPreview.length }} 个模型配置</span>
+          <span>{{ importAdaptersPreview.length }} 个模型</span>
         </div>
         <div v-if="importWarnings.length" class="warning-list">
           <span v-for="item in importWarnings" :key="item">{{ item }}</span>
@@ -381,21 +425,14 @@ onBeforeUnmount(() => {
               <code>byok/{{ adapter.modelID }}</code>
             </div>
             <div class="row-actions">
-              <button class="secondary" @click="useImportedAdapter(adapter)">填入表单</button>
+              <button class="secondary" @click="useImportedAdapter(adapter)">编辑</button>
             </div>
           </article>
         </div>
-        <div v-else class="empty">导入前会先预览，不会显示真实 API Key</div>
-      </section>
+        <div v-else class="empty">暂无预览</div>
+      </div>
 
-      <section class="panel">
-        <div class="panel-head">
-          <div>
-            <p class="section-kicker">手动配置</p>
-            <h2>AI 模型渠道</h2>
-          </div>
-          <button :disabled="loading" @click="saveAdapter">保存并应用</button>
-        </div>
+      <div v-else class="mode-panel">
         <div class="form-grid">
           <label>
             渠道名称
@@ -409,37 +446,47 @@ onBeforeUnmount(() => {
             </select>
           </label>
         </div>
-        <label>
-          Base URL
-          <input v-model="adapterForm.baseURL" placeholder="https://api.example.com/v1" autocomplete="off" />
-        </label>
-        <label>
-          API Key
-          <input v-model="adapterForm.apiKey" type="password" placeholder="sk-..." autocomplete="off" />
-        </label>
         <div class="form-grid">
           <label>
-            模型 ID
-            <input v-model="adapterForm.modelID" placeholder="gpt-4o" autocomplete="off" />
+            Base URL
+            <input v-model="adapterForm.baseURL" placeholder="https://api.example.com/v1" autocomplete="off" />
           </label>
+          <label>
+            API Key
+            <input v-model="adapterForm.apiKey" type="password" placeholder="sk-..." autocomplete="off" />
+          </label>
+        </div>
+        <label>
+          模型 ID
+          <input v-model="adapterForm.modelID" placeholder="gpt-4o" autocomplete="off" />
+        </label>
+
+        <button type="button" class="option-toggle" @click="showAdapterOptions = !showAdapterOptions">
+          {{ showAdapterOptions ? '收起选项' : '更多选项' }}
+        </button>
+        <div v-if="showAdapterOptions" class="adapter-options">
           <label>
             配置 ID
             <input v-model="adapterForm.id" :placeholder="adapterIDPlaceholder()" autocomplete="off" />
           </label>
+          <label class="check">
+            <input v-model="adapterForm.enabled" type="checkbox" />
+            <span>启用这个渠道</span>
+          </label>
         </div>
-        <label class="check">
-          <input v-model="adapterForm.enabled" type="checkbox" />
-          <span>启用这个模型渠道</span>
-        </label>
-        <button class="ghost" @click="resetAdapter">清空表单</button>
-      </section>
+
+        <div class="button-row">
+          <button :disabled="loading" @click="saveAdapter">保存并应用</button>
+          <button class="ghost" :disabled="loading" @click="resetAdapter">清空</button>
+        </div>
+      </div>
     </section>
 
-    <section class="panel">
+    <section class="panel channels-panel">
       <div class="panel-head">
         <div>
-          <p class="section-kicker">模型渠道</p>
-          <h2>已配置</h2>
+          <p class="section-kicker">已配置</p>
+          <h2>模型渠道</h2>
         </div>
         <button class="secondary" :disabled="loading" @click="prepareLocalBridge">应用到 Cursor</button>
       </div>
@@ -454,17 +501,17 @@ onBeforeUnmount(() => {
           </div>
           <div class="row-actions">
             <button class="secondary" @click="editAdapter(adapter)">编辑</button>
-            <button class="secondary" @click="useAdapterRoute(adapter)">诊断</button>
+            <button class="secondary" @click="useAdapterRoute(adapter)">预览</button>
             <button class="danger" @click="removeAdapter(adapter.id)">删除</button>
           </div>
         </article>
       </div>
-      <div v-else class="empty">还没有模型配置。导入一个中转站，或手动填一组 Base URL / API Key / 模型 ID。</div>
+      <div v-else class="empty">暂无模型配置</div>
     </section>
 
     <section class="advanced">
       <button class="ghost advanced-toggle" @click="showAdvanced = !showAdvanced">
-        {{ showAdvanced ? '收起高级设置' : '高级设置与诊断' }}
+        {{ showAdvanced ? '收起高级' : '高级与诊断' }}
       </button>
       <div v-if="showAdvanced" class="advanced-grid">
         <section class="panel">
@@ -585,7 +632,7 @@ onBeforeUnmount(() => {
             <input v-model="routeForm.rawTarget" placeholder="https://api2.cursor.sh" autocomplete="off" />
           </label>
           <pre v-if="routePreview">{{ formattedRoutePreview }}</pre>
-          <div v-else class="empty">选择模型渠道后可查看路由决策</div>
+          <div v-else class="empty">暂无预览</div>
         </section>
 
         <section class="panel full-span">
